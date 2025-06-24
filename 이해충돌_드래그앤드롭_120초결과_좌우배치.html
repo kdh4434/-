@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>이해충돌 분류 게임</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 20px;
+      background: #f4f4f4;
+    }
+    h1 {
+      text-align: center;
+    }
+    #timer {
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    @media (min-width: 600px) {
+      .container {
+        flex-direction: row;
+      }
+    }
+    .items, .categories {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+    .items {
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+    }
+    .item {
+      background: #d9edf7;
+      margin: 6px;
+      padding: 8px;
+      border-radius: 5px;
+      cursor: grab;
+      font-size: 15px;
+      text-align: center;
+      user-select: none;
+    }
+    .category {
+      min-height: 200px;
+      background: #fff;
+      border: 2px dashed #bbb;
+      border-radius: 8px;
+      margin: 8px;
+      padding: 10px;
+      flex: 1;
+    }
+    .category h3 {
+      text-align: center;
+      margin-top: 0;
+    }
+    .correct { background-color: #d4edda !important; }
+    .wrong { background-color: #f8d7da !important; }
+    button {
+      display: block;
+      margin: 10px auto;
+      padding: 8px 16px;
+      font-size: 16px;
+    }
+    #result {
+      text-align: center;
+      font-size: 18px;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>이해충돌 세부기준 맞추기</h1>
+  <div id="timer">남은 시간: 120초</div>
+  <div class="container">
+    <div class="items" id="items">
+      <div class="item" draggable="true">사적이해관계자 신고 및 회피신청</div>
+      <div class="item" draggable="true">공공기관 직무 관련 부동산 보유 매수 신고</div>
+      <div class="item" draggable="true">고위공직자 민간부문 업무활동 내역제출</div>
+      <div class="item" draggable="true">직무관련자와의 거래 신고</div>
+      <div class="item" draggable="true">퇴직자 사적 접촉 신고</div>
+      <div class="item" draggable="true">직무 관련 외부활동 제한</div>
+      <div class="item" draggable="true">가족 채용 제한</div>
+      <div class="item" draggable="true">수의계약 체결 제한</div>
+      <div class="item" draggable="true">공공기관 물품 등의 사적 사용 수익 금지</div>
+      <div class="item" draggable="true">직무상 비밀 등 이용금지</div>
+    </div>
+    <div class="categories">
+      <div class="category" id="report" ondrop="drop(event)" ondragover="allowDrop(event)">
+        <h3>1. 신고 및 제출의무</h3>
+      </div>
+      <div class="category" id="prohibit" ondrop="drop(event)" ondragover="allowDrop(event)">
+        <h3>2. 제한 및 금지행위</h3>
+      </div>
+    </div>
+  </div>
+
+  <button id="submit-btn">제출하기</button>
+  <div id="result"></div>
+
+  <script>
+    const correctAnswers = {
+      "사적이해관계자 신고 및 회피신청": "report",
+      "공공기관 직무 관련 부동산 보유 매수 신고": "report",
+      "고위공직자 민간부문 업무활동 내역제출": "report",
+      "직무관련자와의 거래 신고": "report",
+      "퇴직자 사적 접촉 신고": "report",
+      "직무 관련 외부활동 제한": "prohibit",
+      "가족 채용 제한": "prohibit",
+      "수의계약 체결 제한": "prohibit",
+      "공공기관 물품 등의 사적 사용 수익 금지": "prohibit",
+      "직무상 비밀 등 이용금지": "prohibit"
+    };
+
+    let dragged;
+    let timeLeft = 120;
+    const timerDisplay = document.getElementById("timer");
+
+    const countdown = setInterval(() => {
+      timeLeft--;
+      timerDisplay.textContent = `남은 시간: ${timeLeft}초`;
+      if (timeLeft <= 0) {
+        clearInterval(countdown);
+        document.getElementById("submit-btn").click();
+        document.getElementById("submit-btn").disabled = true;
+      }
+    }, 1000);
+
+    document.querySelectorAll('.item').forEach(item => {
+      item.addEventListener('dragstart', e => {
+        dragged = e.target;
+      });
+    });
+
+    function allowDrop(e) {
+      e.preventDefault();
+    }
+
+    function drop(e) {
+      e.preventDefault();
+      if (!dragged) return;
+      e.currentTarget.appendChild(dragged);
+      dragged = null;
+    }
+
+    document.getElementById("submit-btn").addEventListener("click", () => {
+      let score = 0;
+      for (const [text, correctId] of Object.entries(correctAnswers)) {
+        const element = Array.from(document.querySelectorAll(".item")).find(el => el.textContent.trim() === text);
+        const parentId = element.parentElement.id;
+        if (parentId === correctId) {
+          element.classList.add("correct");
+          score++;
+        } else {
+          element.classList.add("wrong");
+        }
+      }
+      document.getElementById("result").textContent = `총 ${score}개 정답!`;
+    });
+  </script>
+</body>
+</html>
